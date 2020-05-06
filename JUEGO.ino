@@ -46,7 +46,9 @@ int x_car_2 = 240;
 int anim = 0;
 int x = 0;
 int y_o_1 = 0;
+int y_o_2 = 0;
 int game_on = 1;
+
 //***************************************************************************************************************************************
 // Functions Prototypes
 //***************************************************************************************************************************************
@@ -70,8 +72,9 @@ void red_car_animation(void);
 void yellow_car_animation(void);
 
 void rand_car_1(void);
+void rand_car_2(void);
 
-void Vars_init(void);
+void vars_init(void);
 
 extern uint8_t red_car_fwd [];
 extern uint8_t red_car_right [];
@@ -80,6 +83,7 @@ extern uint8_t yellow_car_fwd [];
 extern uint8_t yellow_car_left [];
 extern uint8_t yellow_car_right [];
 extern uint8_t onco_car_1 [];
+extern uint8_t onco_car_2 [];
 
 int j1izq;
 int j1der;
@@ -104,7 +108,7 @@ void setup() {
   GPIOPadConfigSet(GPIO_PORTB_BASE, 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7, GPIO_STRENGTH_8MA, GPIO_PIN_TYPE_STD_WPU);
   Serial.println("Inicio");
   LCD_Init();
-  Vars_init();
+  vars_init();
   
   LCD_Clear(0x8410);
   FillRect(155, 0, 3, 240,0xFFFF);
@@ -125,6 +129,7 @@ void loop() {
     
   
     rand_car_1();
+    rand_car_2();
     
     //////////////////////////////CARRO 1/////////////////////////////////
     if(x_car_1>=0 && (x_car_1+18)<=155){
@@ -482,10 +487,11 @@ void LCD_Sprite(int x, int y, int width, int height, unsigned char bitmap[],int 
   digitalWrite(LCD_CS, HIGH);
 }
 
-void Vars_init(void){
+void vars_init(void){
   x_car_1 = 80;
   x_car_2 = 240;
   y_o_1 = 0;
+  y_o_2 = 0;
   car_1 = 0;
   car_2 = 0;
 }
@@ -582,9 +588,24 @@ void rand_car_1(void){
   }
 }
 
-//void rand_car_2(void){
-//  
-//}
+void rand_car_2(void){
+  if(y_o_2 >= 0){
+    LCD_Bitmap(210, y_o_2, 23, 31, onco_car_2);
+    H_line(210, y_o_2, 23, 0x8410);
+    y_o_2++;
+    delay(10);
+  }
+  if(y_o_2==240){
+    y_o_2=-25;
+  }
+  if(y_o_2<=0){
+    y_o_2++;
+  }  
+  if(y_o_2+31>=120 && y_o_2<=145 && x_car_2+18>=210 && x_car_2<=233){
+    game_on = 0;
+    LCD_Print("Pierde jug2", 170, 20, 1, 0x0000, 0xffff);
+  }
+}
 
 
   
