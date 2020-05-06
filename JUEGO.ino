@@ -7,6 +7,14 @@
  */
 //**************************************************************************************************************************************
 
+//**********************************************
+/*
+ * Julio Lazo
+ * Javier Archila
+ * Juego programado en Tiva C para la clase de digital 2
+ */
+//**********************************************
+
 #include <stdint.h>
 #include <stdbool.h>
 #include <TM4C123GH6PM.h>
@@ -38,6 +46,7 @@ int x_car_2 = 240;
 int anim = 0;
 int x = 0;
 int y_o_1 = 0;
+int game_on = 1;
 //***************************************************************************************************************************************
 // Functions Prototypes
 //***************************************************************************************************************************************
@@ -62,6 +71,8 @@ void yellow_car_animation(void);
 
 void rand_car_1(void);
 
+void Vars_init(void);
+
 extern uint8_t red_car_fwd [];
 extern uint8_t red_car_right [];
 extern uint8_t red_car_left [];
@@ -74,6 +85,7 @@ int j1izq;
 int j1der;
 int j2izq;
 int j2der;
+int reset_btn;
 
 //***************************************************************************************************************************************
 // Inicialización
@@ -85,51 +97,63 @@ void setup() {
   pinMode (PA_3, INPUT);
   pinMode (PA_6, INPUT);
   pinMode (PA_7, INPUT);
+  pinMode (PF_4, INPUT);
   
   SysCtlClockSet(SYSCTL_SYSDIV_2_5|SYSCTL_USE_PLL|SYSCTL_OSC_MAIN|SYSCTL_XTAL_16MHZ);
   Serial.begin(9600);
   GPIOPadConfigSet(GPIO_PORTB_BASE, 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7, GPIO_STRENGTH_8MA, GPIO_PIN_TYPE_STD_WPU);
   Serial.println("Inicio");
   LCD_Init();
+  Vars_init();
   
   LCD_Clear(0x8410);
-  FillRect(155, 0, 10, 240,0xFFFF);
+  FillRect(155, 0, 3, 240,0xFFFF);
+  FillRect(162, 0, 3, 240,0xFFFF);
   
 }
 //***************************************************************************************************************************************
 // Loop Infinito
 //***************************************************************************************************************************************
 void loop() {
+  reset_btn = digitalRead(PF_4);
+  while(game_on){
     //PA2(JUG2, IZQUIERDA), PA3(JUG2, DERECHA), PA6(JUG1, IZQUIERDA), PA7(JUG1, DERECHA)
-  j2izq = digitalRead(PA_2);
-  j2der = digitalRead(PA_3);
-  j1izq = digitalRead(PA_6);
-  j1der = digitalRead(PA_7);
-
-  rand_car_1();
-  
-  //////////////////////////////CARRO 1/////////////////////////////////
-  if(x_car_1>=0 && (x_car_1+18)<=155){
-    red_car_animation();
-    }
-  if(x_car_1==0){
-    x_car_1++;
-    }
-  if((x_car_1+18)==155){
-    x_car_1--;
-    }
+    j2izq = digitalRead(PA_2);
+    j2der = digitalRead(PA_3);
+    j1izq = digitalRead(PA_6);
+    j1der = digitalRead(PA_7);
     
-  //////////////////////////////CARRO 2//////////////////////////////////
-  if(x_car_2>=165 && (x_car_2+18)<=320){
-    yellow_car_animation();
-    }
-  if(x_car_2==165){
-    x_car_2++;
-    }
-  if((x_car_2+18)==320){
-    x_car_2--;
-    }
   
+    rand_car_1();
+    
+    //////////////////////////////CARRO 1/////////////////////////////////
+    if(x_car_1>=0 && (x_car_1+18)<=155){
+      red_car_animation();
+      }
+    if(x_car_1==0){
+      x_car_1++;
+      }
+    if((x_car_1+18)==155){
+      x_car_1--;
+      }
+      
+    //////////////////////////////CARRO 2//////////////////////////////////
+    if(x_car_2>=165 && (x_car_2+18)<=320){
+      yellow_car_animation();
+      }
+    if(x_car_2==165){
+      x_car_2++;
+      }
+    if((x_car_2+18)==320){
+      x_car_2--;
+      }
+  }
+  if(game_on==0 && reset_btn==HIGH){
+    game_on = 1;
+    x_car_1 = 80;
+    x_car_2 = 240;
+    setup();
+  }
 }
 //***************************************************************************************************************************************
 // Función para inicializar LCD
@@ -458,6 +482,14 @@ void LCD_Sprite(int x, int y, int width, int height, unsigned char bitmap[],int 
   digitalWrite(LCD_CS, HIGH);
 }
 
+void Vars_init(void){
+  x_car_1 = 80;
+  x_car_2 = 240;
+  y_o_1 = 0;
+  car_1 = 0;
+  car_2 = 0;
+}
+
 void red_car_animation(void){
   //PA2(JUG2, IZQUIERDA), PA3(JUG2, DERECHA), PA6(JUG1, IZQUIERDA), PA7(JUG1, DERECHA)
   if((j1izq==LOW && j1der==LOW) || (j1izq==HIGH && j1der==HIGH)){
@@ -545,10 +577,14 @@ void rand_car_1(void){
     y_o_1++;
   }  
   if(y_o_1+36>=120 && y_o_1<=145 && x_car_1+18>=55 && x_car_1<=75){
+    game_on = 0;
     LCD_Print("Pierde jug1", 10, 20, 1, 0x0000, 0xffff);
   }
 }
 
+//void rand_car_2(void){
+//  
+//}
 
 
   
