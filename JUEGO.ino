@@ -146,6 +146,10 @@ int jug2_loser = 0;
 int var1 = 0;
 int var2 = 0;
 int var3 = 0;
+int init_snd = 0;
+int fwd_snd = 0;
+int turn_snd = 0;
+int boom_snd = 0;
 
 //***************************************************************************************************************************************
 // Inicialización
@@ -160,7 +164,10 @@ void setup() {
   pinMode (PA_7, INPUT);
   pinMode (PF_4, INPUT);
 
-  
+  pinMode(PC_6, OUTPUT); //pin para música de inicio
+  pinMode(PC_7, OUTPUT); //pin para sonido de giro
+  pinMode(PD_6, OUTPUT); //pin para sonido de ir adelante
+  pinMode(PD_7, OUTPUT); //pin para sonido de explosión
   
   SysCtlClockSet(SYSCTL_SYSDIV_2_5|SYSCTL_USE_PLL|SYSCTL_OSC_MAIN|SYSCTL_XTAL_16MHZ);
   Serial.begin(9600);
@@ -174,6 +181,11 @@ void setup() {
   FillRect(155, 0, 3, 240,0xFFFF);
   FillRect(162, 0, 3, 240,0xFFFF);
   
+  digitalWrite(PD_6, LOW);
+  digitalWrite(PD_7, LOW);
+  digitalWrite(PC_6, LOW);
+  digitalWrite(PC_7, LOW);
+  
 }
 //***************************************************************************************************************************************
 // Loop Infinito
@@ -182,6 +194,7 @@ void loop() {
   reset_btn = digitalRead(PF_4);
 
   if(game_on==0 && jug1_loser == 1 || jug2_loser ==1){
+    digitalWrite(PD_7, LOW);
     for(var1 = 0; var1 ==0; var1++){
       FillRect(0, 0, 320, 240, 0x0000);
       FillRect(0, 0, 320, 10, 0xffff);
@@ -205,8 +218,6 @@ void loop() {
         LCD_Bitmap(85, 50, 150, 20, jug1_wins);
       }
     }
-    
-    
   }
 
   else if(game_on==0 && reset_btn==HIGH){
@@ -220,6 +231,20 @@ void loop() {
     j2der = digitalRead(PA_3);
     j1izq = digitalRead(PA_6);
     j1der = digitalRead(PA_7);
+
+//    digitalWrite(PC_6, LOW);
+//    digitalWrite(PC_7, LOW);
+//    digitalWrite(PD_6, LOW);
+//    digitalWrite(PD_7, LOW);
+
+    if(car_1!=0 || car_2!=0){
+      digitalWrite(PC_7, HIGH); //giro, arduino pin 5
+      digitalWrite(PD_6, LOW); //recto, arduino pin 3
+    }
+    else if(car_1==0 && car_2==0){
+      digitalWrite(PC_7, LOW);
+      digitalWrite(PD_6, HIGH);
+    }
     
   
     
@@ -261,19 +286,22 @@ void loop() {
   
   
 }
+//PC_6 = init_snd
+
 
 void start_screen(void){
-  
+  digitalWrite(PC_6, HIGH);
   while(end_to_start==0){
-    
     if(x_s==1){
       LCD_Bitmap(0, 0, 320, 240, inicio);
+      
     }
     x_s = 0;
     start_btn = digitalRead(PF_4);
     
     if(start_btn == HIGH){
       end_to_start = 1;
+      digitalWrite(PC_6, LOW);
       setup();
     }
   }
@@ -301,17 +329,24 @@ void vars_init(void){
   var2 = 0;
   var3 = 0;
 }
+
+
 //función de movimiento de carro 1
+
 void red_car_animation(void){
   //PA2(JUG2, IZQUIERDA), PA3(JUG2, DERECHA), PA6(JUG1, IZQUIERDA), PA7(JUG1, DERECHA)
-  if((j1izq==LOW && j1der==LOW) || (j1izq==HIGH && j1der==HIGH)){
+  
+  if((j1izq==LOW && j1der==LOW) || (j1izq==HIGH && j1der==HIGH)){ //recto
     car_1 = 0;
+
     }
   else if(j1izq==LOW && j1der==HIGH){//derecha
     car_1=1;
+
     }
   else if(j1izq=HIGH && j1der==LOW){//izquierda
     car_1=2;
+
     }
 
   switch (car_1){
@@ -342,18 +377,21 @@ void red_car_animation(void){
     }
   }
 
-  //void V_line(unsigned int x, unsigned int y, unsigned int l, unsigned int c);
+
 //función de movimiento de carro 2
 void yellow_car_animation(void){
   //PA2(JUG2, IZQUIERDA), PA3(JUG2, DERECHA), PA6(JUG1, IZQUIERDA), PA7(JUG1, DERECHA)
   if((j2izq==LOW && j2der==LOW) || (j2izq==HIGH && j2der==HIGH)){
     car_2 = 0;
+
     }
   else if(j2izq==LOW && j2der==HIGH){//derecha
     car_2=1;
+
     }
   else if(j2izq=HIGH && j2der==LOW){//izquierda
     car_2=2;
+
     }
 
   switch (car_2){
@@ -405,6 +443,7 @@ void rand_car_1(void){
   if(y_o_1+40>=120 && y_o_1<=145 && x_car_1+18>=55 && x_car_1<=75){
     game_on = 0;
     jug1_loser = 1;
+    digitalWrite(PD_7, HIGH);
     for(explosion=0; explosion<=10; explosion++){
       delay(10);
       LCD_Sprite(x_car_1-20, y_o_1+10, 50, 50, boom, 7, explosion, 0, 0);
@@ -429,6 +468,7 @@ void rand_car_2(void){
   if(y_o_2+40>=120 && y_o_2<=145 && x_car_2+18>=170 && x_car_2<=190){
     game_on = 0;
     jug2_loser = 1;
+    digitalWrite(PD_7, HIGH);
     for(explosion=0; explosion<=10; explosion++){
       delay(10);
       LCD_Sprite(x_car_2-20, y_o_2+10, 50, 50, boom, 7, explosion, 0, 0);
@@ -453,6 +493,7 @@ void rand_car_3(void){
   if(y_o_3+40>=120 && y_o_3<=145 && x_car_1+18>=85 && x_car_1<=105){
     game_on = 0;
     jug1_loser = 1;
+    digitalWrite(PD_7, HIGH);
     for(explosion=0; explosion<=10; explosion++){
       delay(10);
       LCD_Sprite(x_car_1-20, y_o_3+10, 50, 50, boom, 7, explosion, 0, 0);
@@ -477,6 +518,7 @@ void rand_car_4(void){
   if(y_o_4+40>=120 && y_o_4<=145 && x_car_2+18>=260 && x_car_2<=280){
     game_on = 0;
     jug2_loser = 1;
+    digitalWrite(PD_7, HIGH);
     for(explosion=0; explosion<=10; explosion++){
       delay(10);
       LCD_Sprite(x_car_2-20, y_o_4+10, 50, 50, boom, 7, explosion, 0, 0);
@@ -501,6 +543,7 @@ void rand_car_5(void){
   if(y_o_5+40>=120 && y_o_5<=145 && x_car_1+18>=25 && x_car_1<=45){
     game_on = 0;
     jug1_loser = 1;
+    digitalWrite(PD_7, HIGH);
     for(explosion=0; explosion<=10; explosion++){
       delay(10);
       LCD_Sprite(x_car_1-20, y_o_5+10, 50, 50, boom, 7, explosion, 0, 0);
@@ -525,6 +568,7 @@ void rand_car_6(void){
   if(y_o_6+40>=120 && y_o_6<=145 && x_car_2+18>=200 && x_car_2<=220){
     game_on = 0;
     jug2_loser = 1;
+    digitalWrite(PD_7, HIGH);
     for(explosion=0; explosion<=10; explosion++){
       delay(10);
       LCD_Sprite(x_car_2-20, y_o_6+10, 50, 50, boom, 7, explosion, 0, 0);
@@ -549,6 +593,7 @@ void rand_car_7(void){
   if(y_o_7+40>=120 && y_o_7<=145 && x_car_1+18>=115 && x_car_1<=135){
     game_on = 0;
     jug1_loser = 1;
+    digitalWrite(PD_7, HIGH);
     for(explosion=0; explosion<=10; explosion++){
       delay(10);
       LCD_Sprite(x_car_1-20, y_o_7+10, 50, 50, boom, 7, explosion, 0, 0);
@@ -573,6 +618,7 @@ void rand_car_8(void){
   if(y_o_8+40>=120 && y_o_8<=145 && x_car_2+18>=230 && x_car_2<=250){
     game_on = 0;
     jug2_loser = 1;
+    digitalWrite(PD_7, HIGH);
     for(explosion=0; explosion<=10; explosion++){
       delay(10);
       LCD_Sprite(x_car_2-20, y_o_8+10, 50, 50, boom, 7, explosion, 0, 0);
@@ -597,6 +643,7 @@ void rand_car_9(void){
   if(y_o_9+40>=120 && y_o_9<=145 && x_car_1+18>=135 && x_car_1<=155){
     game_on = 0;
     jug1_loser = 1;
+    digitalWrite(PD_7, HIGH);
     for(explosion=0; explosion<=10; explosion++){
       delay(10);
       LCD_Sprite(x_car_1-20, y_o_9+10, 50, 50, boom, 7, explosion, 0, 0);
@@ -621,6 +668,7 @@ void rand_car_10(void){
   if(y_o_10+40>=120 && y_o_10<=145 && x_car_2+18>=290 && x_car_2<=310){
     game_on = 0;
     jug2_loser = 1;
+    digitalWrite(PD_7, HIGH);
     for(explosion=0; explosion<=10; explosion++){
       delay(10);
       LCD_Sprite(x_car_2-20, y_o_10+10, 50, 50, boom, 7, explosion, 0, 0);
