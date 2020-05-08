@@ -26,11 +26,11 @@ void setup(){
   }
   
   tmrpcm.setVolume(6);                    //0 to 7. Set volume level
-  //tmrpcm.play("init.wav);  
+
 }
 
 void loop(){
-
+//se usa x1 para que esta función de if no pueda volver a usarse a menos que se reinicie el arduino físicamente (por eso x1++ y ya no se resetea esa variable)
   if(digitalRead(2)==HIGH &&  x1==0){ //MÚSICA DE INICIO
     x1++;
     x2=0;
@@ -39,14 +39,15 @@ void loop(){
     //tmrpcm.stopPlayback();
     tmrpcm.play("init.wav");
   }
-  //else if(digitalRead(2)==LOW && digitalRead(3)==HIGH && digitalRead(5)==LOW && digitalRead(6)==LOW && x2==0){ //MÚSICA PARA IR ADELANTE
-  if(digitalRead(3) == HIGH && x2==0){
+//parecido a la musica de inicio, pero aquí se lee el pin que viene de la tiva de la variable de "ambos carros hacia adelante" y se pone x2 para dar tiempo a fwd.wav que suene
+  if(digitalRead(3) == HIGH && x2==0){  //MÚSICA PARA IR ADELANTE
     x2++;
     x3=0;
     tmrpcm.stopPlayback();
     tmrpcm.play("fwd.wav");
   }
-  //else if(digitalRead(2)==LOW && digitalRead(3)==LOW && digitalRead(5)==HIGH && digitalRead(6)==LOW && x3==0){ // MÚSICA PARA CUANDO SE GIRA
+
+// MÚSICA PARA CUANDO SE GIRA
   if(digitalRead(5)==HIGH && x3==0){ //PC_7
     x2=0;
     x3++;

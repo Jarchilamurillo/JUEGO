@@ -58,16 +58,6 @@ int y_o_7 = 0;
 int y_o_8 = 0;
 int y_o_9 = 0;
 int y_o_10 = 0;
-int faster_1 = 0;
-int faster_2 = 0;
-int faster_3 = 0;
-int faster_4 = 0;
-int faster_5 = 0;
-int faster_6 = 0;
-int faster_7 = 0;
-int faster_8 = 0;
-int faster_9 = 0;
-int faster_10 = 0;
 //variable para parar el juego cuando se choca
 int game_on = 1;
 
@@ -158,12 +148,13 @@ void setup() {
   
 
   //PA2(JUG2, IZQUIERDA), PA3(JUG2, DERECHA), PA6(JUG1, IZQUIERDA), PA7(JUG1, DERECHA)
+  //Entrada de botones de juego y reset/play
   pinMode (PA_2, INPUT);
   pinMode (PA_3, INPUT);
   pinMode (PA_6, INPUT);
   pinMode (PA_7, INPUT);
   pinMode (PF_4, INPUT);
-
+//pines de salida para arduino para controlar la música
   pinMode(PC_6, OUTPUT); //pin para música de inicio
   pinMode(PC_7, OUTPUT); //pin para sonido de giro
   pinMode(PD_6, OUTPUT); //pin para sonido de ir adelante
@@ -174,14 +165,14 @@ void setup() {
   GPIOPadConfigSet(GPIO_PORTB_BASE, 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7, GPIO_STRENGTH_8MA, GPIO_PIN_TYPE_STD_WPU);
   Serial.println("Inicio");
   LCD_Init();
-  vars_init();
-  start_screen();
-  LCD_Clear(0x8410);
+  vars_init(); //inicialización de variables
+  start_screen(); //pantalla de inicio
+  LCD_Clear(0x8410); //se pinta de gris la pantalla
   
-  FillRect(155, 0, 3, 240,0xFFFF);
+  FillRect(155, 0, 3, 240,0xFFFF); //se crean las líneas centrales
   FillRect(162, 0, 3, 240,0xFFFF);
   
-  digitalWrite(PD_6, LOW);
+  digitalWrite(PD_6, LOW);//se establecen estados iniciales para los pines de sonido
   digitalWrite(PD_7, LOW);
   digitalWrite(PC_6, LOW);
   digitalWrite(PC_7, LOW);
@@ -192,10 +183,11 @@ void setup() {
 //***************************************************************************************************************************************
 void loop() {
   reset_btn = digitalRead(PF_4);
-
+  
+//función para pantalla de final de juego 
   if(game_on==0 && jug1_loser == 1 || jug2_loser ==1){
-    digitalWrite(PD_7, LOW);
-    for(var1 = 0; var1 ==0; var1++){
+    digitalWrite(PD_7, LOW);//pin de salida para arduino (música)
+    for(var1 = 0; var1 ==0; var1++){ //para que solo realice la pantalla final una sola vez
       FillRect(0, 0, 320, 240, 0x0000);
       FillRect(0, 0, 320, 10, 0xffff);
       FillRect(0, 0, 10, 240, 0xffff);
@@ -205,14 +197,14 @@ void loop() {
       LCD_Print("Press start to play again", 70, 180, 1, 0xffff, 0x0000);
     }
       
-    if(jug1_loser == 1){
+    if(jug1_loser == 1){ //función para ver qué jugador perdió/ganó
       jug1_loser = 0;
       for(var2 = 0; var2<=1; var2++){
         LCD_Bitmap(85, 50, 150, 20, jug2_wins);
       }
     }
 
-    if(jug2_loser == 1){
+    if(jug2_loser == 1){ //función para ver qué jugador perdió/ganó
       jug2_loser = 0;
       for(var3=0; var3<=1; var3++){
         LCD_Bitmap(85, 50, 150, 20, jug1_wins);
@@ -220,28 +212,24 @@ void loop() {
     }
   }
 
-  else if(game_on==0 && reset_btn==HIGH){
-    game_on = 1;
+  else if(game_on==0 && reset_btn==HIGH){ //función para resetear el juego
+    game_on = 1; //variable maestra para el juego
     setup();
   }
   
-  while(game_on){
+  while(game_on){ //este while se creó para poder detener totalmente el juego cuando ocurre un choque
     //PA2(JUG2, IZQUIERDA), PA3(JUG2, DERECHA), PA6(JUG1, IZQUIERDA), PA7(JUG1, DERECHA)
     j2izq = digitalRead(PA_2);
     j2der = digitalRead(PA_3);
     j1izq = digitalRead(PA_6);
     j1der = digitalRead(PA_7);
 
-//    digitalWrite(PC_6, LOW);
-//    digitalWrite(PC_7, LOW);
-//    digitalWrite(PD_6, LOW);
-//    digitalWrite(PD_7, LOW);
 
-    if(car_1!=0 || car_2!=0){
+    if(car_1!=0 || car_2!=0){ //función para ver si alguno de los carros está girando para que suenen las llantas
       digitalWrite(PC_7, HIGH); //giro, arduino pin 5
       digitalWrite(PD_6, LOW); //recto, arduino pin 3
     }
-    else if(car_1==0 && car_2==0){
+    else if(car_1==0 && car_2==0){ //función para ver si ambos carros van rectos para que suene el motor de los carros
       digitalWrite(PC_7, LOW);
       digitalWrite(PD_6, HIGH);
     }
@@ -250,6 +238,9 @@ void loop() {
     
     
     //////////////////////////////CARRO 1/////////////////////////////////
+
+// estos 6 "if" son para delimitar el movimiento de cada carro y que si llega a un extremo, no se quede trabado 
+    
     if(x_car_1>=0 && (x_car_1+18)<=155){
       red_car_animation();
     }
@@ -271,6 +262,8 @@ void loop() {
       x_car_2--;
     }
 
+    //se llaman las funciones de los carros enemigos
+
     rand_car_1();
     rand_car_2();
     rand_car_3();
@@ -286,11 +279,11 @@ void loop() {
   
   
 }
-//PC_6 = init_snd
 
 
-void start_screen(void){
-  digitalWrite(PC_6, HIGH);
+
+void start_screen(void){ //función de pantalla de inicio
+  digitalWrite(PC_6, HIGH); //pin para que suene la música de inicio del juego
   while(end_to_start==0){
     if(x_s==1){
       LCD_Bitmap(0, 0, 320, 240, inicio);
@@ -299,9 +292,9 @@ void start_screen(void){
     x_s = 0;
     start_btn = digitalRead(PF_4);
     
-    if(start_btn == HIGH){
+    if(start_btn == HIGH){ //aquí se lee el botón principal para ver si se inicia el juego o no
       end_to_start = 1;
-      digitalWrite(PC_6, LOW);
+      digitalWrite(PC_6, LOW); //se pone en LOW el pin de la música de inicio
       setup();
     }
   }
@@ -335,7 +328,9 @@ void vars_init(void){
 
 void red_car_animation(void){
   //PA2(JUG2, IZQUIERDA), PA3(JUG2, DERECHA), PA6(JUG1, IZQUIERDA), PA7(JUG1, DERECHA)
-  
+
+
+ //aquí se leen ambos botones (izq y der) de cada jugador y si se apachan, cambia una variable que entra a un case.
   if((j1izq==LOW && j1der==LOW) || (j1izq==HIGH && j1der==HIGH)){ //recto
     car_1 = 0;
 
@@ -350,19 +345,19 @@ void red_car_animation(void){
     }
 
   switch (car_1){
-    case 0: 
-      anim = (x/5)%4;
+    case 0: //case 0 es cuando va recto porque no se están apachando los botones o ambos están apachados. 
+      anim = (x/5)%4; //es una variable para que el sprite del carro pueda ir moviéndose
       LCD_Sprite(x_car_1, 120, 18, 25, red_car_fwd, 4, anim, 0, 0);
       x++;
       break;
-//void FillRect(unsigned int x, unsigned int y, unsigned int w, unsigned int h, unsigned int c);
+
     case 1: //DERECHA
       anim = (x/5)%2;
       LCD_Sprite(x_car_1, 120, 18, 25, red_car_right, 2, anim, 0, 0);
       
       x++;
-      x_car_1 = x_car_1 + 2;
-      V_line(x_car_1-1, 120, 25, 0x8410);
+      x_car_1 = x_car_1 + 2; //este +2 es el que mueve el carro a los lados
+      V_line(x_car_1-1, 120, 25, 0x8410); //se pone una línea al lado del carro para ir borrando los residuos de imagen del sprite
       
       
       break;  
@@ -420,35 +415,29 @@ void yellow_car_animation(void){
   }
 
 
-  
-//void LCD_Bitmap(unsigned int x, unsigned int y, unsigned int width, unsigned int height, unsigned char bitmap[]);
-//void LCD_Sprite(int x, int y, int width, int height, unsigned char bitmap[],int columns, int index, char flip, char offset);
-//void H_line(unsigned int x, unsigned int y, unsigned int l, unsigned int c);
-
-
 
 //Función de carro enemigo 1
 void rand_car_1(void){
-  if(y_o_1 >= 0){
+  if(y_o_1 >= 0){ //y_o_1 es la posición y de este carro en específico. Todos los carros enemigos empiezan en diferentes y para que no bajen todos al mismo tiempo
     LCD_Bitmap(55, y_o_1, 20, 40, onco_car_1);
-    H_line(55, y_o_1, 20, 0x8410);
-    y_o_1++;
+    H_line(55, y_o_1, 20, 0x8410);//para limpiar el residuo de imagen del bitmap
+    y_o_1++;//para que vaya bajando el carro
   }
-  if(y_o_1>=240){
+  if(y_o_1>=240){//si el carro llega a la parte de abajo de la pantalla, se regresa a -40 en y para que vuelva a caer (altura del bitmap es 40)
     y_o_1 = -40;
   }
   if(y_o_1<=0){
     y_o_1++;
   }  
-  if(y_o_1+40>=120 && y_o_1<=145 && x_car_1+18>=55 && x_car_1<=75){
-    game_on = 0;
-    jug1_loser = 1;
-    digitalWrite(PD_7, HIGH);
-    for(explosion=0; explosion<=10; explosion++){
+  if(y_o_1+40>=120 && y_o_1<=145 && x_car_1+18>=55 && x_car_1<=75){ //aquí se hace la comparación de variables de "x" y "y" para ver sí hay colisión o no
+    game_on = 0; //si hay colisión, la variable maestra del juego (el while dentro del loop) se pone en cero para que pare el juego
+    jug1_loser = 1;//variable para ver quién perdió
+    digitalWrite(PD_7, HIGH);//pin para la musica de explosión
+    for(explosion=0; explosion<=10; explosion++){//sprite de la explosión
       delay(10);
       LCD_Sprite(x_car_1-20, y_o_1+10, 50, 50, boom, 7, explosion, 0, 0);
     }
-    explosion=0;
+    explosion=0;//se reinicia esta variable para que pueda usarse de nuevo en el siguiente juego 
   }
 }
 //Función de carro enemigo 2
